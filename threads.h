@@ -9,6 +9,7 @@
 namespace star {
     
 class ThreadPool : public Noncopyable {
+    using Task = std::function<void()>;
   public:
     ThreadPool(size_t threads, bool start=true);
     ~ThreadPool();
