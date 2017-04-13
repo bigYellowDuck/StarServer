@@ -1,5 +1,5 @@
 #include "threads.h"
-
+#include "logging.h"
 namespace star {
 
 ThreadPool::ThreadPool(size_t threads, bool start)
@@ -12,7 +12,11 @@ ThreadPool::ThreadPool(size_t threads, bool start)
 }
 
 ThreadPool::~ThreadPool() {
-    // TODO:safely exit thread pool
+    assert(tasks_.exited() && !running_);
+    if (tasks_.size()) {
+        info("%lu tasks not processed when thread pool exited\n", 
+            tasks_.size());
+    }
 }
 
 void ThreadPool::start() {
@@ -22,10 +26,10 @@ void ThreadPool::start() {
     for (auto& th : threads_) {
         std::thread t(
             [this]() {
-                Task task;
-                while (1) {
-                    task = tasks_.pop();
-                    task();
+                while (!tasks_.exited()) {
+                    Task task;
+                    if (tasks_.pop(&task))
+                        task();
                 }
             }
         );   

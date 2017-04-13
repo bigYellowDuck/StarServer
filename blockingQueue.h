@@ -6,6 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <deque>
+#include <atomic>
 
 namespace star {
 
@@ -16,39 +17,50 @@ class BlockingQueue : public Noncopyable {
     BlockingQueue()
       : mutex_(),
         notEmpty_(),
-        queue_() {
+        queue_(),
+        exit_(false) {
     
     }
 
     ~BlockingQueue() = default;
 
-    void push(T&& t) {
+    bool push(T&& t) {
+        if (exit_)
+            return false;
+
         {
             LockGuard lock(mutex_);
             queue_.push_back(std::move(t));
         }
         notEmpty_.notify_one();
+
+        return true;
     }
 
+    bool push(const T& t) {
+        if (exit_)
+            return false;
 
-    void push(const T& t) {
         {
             LockGuard lock(mutex_);
             queue_.push_back(t);
         }
         notEmpty_.notify_one();
+
+        return true;
     }
 
-    T pop() {
+    bool pop(T* v) {
         std::unique_lock<std::mutex> lock(mutex_);
-        notEmpty_.wait(lock, [this](){ return !this->queue_.empty(); });
+        notEmpty_.wait(lock, [this](){ return exit_ || !this->queue_.empty(); });
 
-        assert(!queue_.empty());
+        if (queue_.empty())
+            return false;
         
-        T front(std::move(queue_.front()));
+        *v = std::move(queue_.front());
         queue_.pop_front();
 
-        return front;
+        return true;
     }
 
     size_t size() const noexcept {
@@ -56,10 +68,21 @@ class BlockingQueue : public Noncopyable {
         return queue_.size();
     }
 
+    void exit() {
+        exit_ = true;
+        LockGuard locl(mutex_);
+        notEmpty_.notify_all();
+    }
+
+    bool exited() const noexcept { 
+        return exit_;
+    }
+
   private:
     mutable std::mutex mutex_;
     std::condition_variable notEmpty_;
     std::deque<T> queue_;
+    std::atomic<bool> exit_;
 };
 
 }  // end of namespace star

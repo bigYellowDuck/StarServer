@@ -15,6 +15,7 @@ class ThreadPool : public Noncopyable {
 
     void start();
     void join();
+    ThreadPool& exit() { tasks_.exit(); running_ = false; return *this; }
 
     void addTask(Task&& task);
     void addTask(const Task& task) { return addTask(Task(task)); }
@@ -23,7 +24,7 @@ class ThreadPool : public Noncopyable {
   private:
     BlockingQueue<Task> tasks_;
     std::vector<std::thread> threads_;
-    bool running_;
+    std::atomic<bool> running_;
 };
 
 }  // end of namespace star
