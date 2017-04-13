@@ -1,7 +1,13 @@
 #ifndef STARSERVER_UTIL_H
 #define STARSERVER_UTIL_H
 
+#include <assert.h>
+
+#include <functional>
+
 namespace star {
+
+using Task = std::function<void()>;
 
 class Noncopyable {
   public:

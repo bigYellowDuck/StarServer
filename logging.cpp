@@ -50,7 +50,7 @@ void Logger::logv(int level, const char *file, int line, const char *fmt ...) {
     struct tm t;
     localtime_r(&seconds, &t);
     p += snprintf(p, limit-p,
-            "%04d/%02d/%02d-%02d:%02d:%02d.%6d %s %s:%d  ",
+            "%04d/%02d/%02d-%02d:%02d:%02d.%6d %s %s:%d -  ",
             t.tm_year + 1900,
             t.tm_mon + 1,
             t.tm_mday,
@@ -98,7 +98,7 @@ void Logger::setLogLevel(const std::string &level) {
 }
 
 void Logger::setFileName(const std::string &filename) {
-    int fd = open(filename.data(), O_APPEND|O_CREAT|O_WRONLY|O_CLOEXEC);
+    int fd = open(filename.data(), O_APPEND|O_CREAT|O_WRONLY|O_CLOEXEC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd < 0) {
         fprintf(stderr, "open log file %s failed. msg: %s ignored\n",
                 filename.data(), strerror(errno));
