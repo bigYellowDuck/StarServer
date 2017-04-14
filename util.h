@@ -7,8 +7,6 @@
 
 namespace star {
 
-using Task = std::function<void()>;
-
 class Noncopyable {
   public:
     Noncopyable(const Noncopyable &) = delete;
