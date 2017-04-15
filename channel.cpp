@@ -7,10 +7,10 @@
 
 namespace star {
 
-Channel::Channel(AbstractPoller* poller, int fd)
+Channel::Channel(EventLoop* loop, int fd)
     : fd_(fd),
       events_(0),
-      poller_(poller) {
+      loop_(loop) {
     static std::atomic<int64_t> id(0);
     id_ = ++id;
 }
@@ -75,7 +75,7 @@ void Channel::handleError() {
 void Channel::close() {
     if (fd_ >= 0) {
         trace("close channel %lld fd %d", id_, fd_);
-        poller_->removeChannel(this);
+        loop_->removeChannel(this);
         ::close(fd_);
         fd_ = -1;
     }

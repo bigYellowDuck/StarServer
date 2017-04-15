@@ -2,14 +2,14 @@
 #define STARSERVER_CHANNEL_H
 
 #include "util.h"
-#include "epoller.h"
+#include "eventloop.h"
 
 namespace star{
 
 class Channel : public Noncopyable {
     using EventCallBack = std::function<void()>;
   public:
-    Channel(AbstractPoller* poller, int fd);
+    Channel(EventLoop* loop_, int fd);
     ~Channel();
 
     void setReadCallBack(const EventCallBack& cb)
@@ -34,9 +34,9 @@ class Channel : public Noncopyable {
     int fd() const noexcept { return fd_; }
     uint32_t events() const noexcept { return events_; }
 
-    void addToPoller() { poller_->addChannel(this); }
-    void updateToPoller() { poller_->updateChannel(this); }
-    void removeToPoller() { poller_->removeChannel(this); }
+    void addToPoller() { loop_->addChannel(this); }
+    void updateToPoller() { loop_->updateChannel(this); }
+    void removeToPoller() { loop_->removeChannel(this); }
 
     void enableRead(bool enable);
     void enableWrite(bool enable);
@@ -52,7 +52,7 @@ class Channel : public Noncopyable {
   private:
     int fd_;
     uint32_t events_;
-    AbstractPoller* poller_;
+    EventLoop* loop_;
     int64_t id_;
 
     EventCallBack readCallBack_;
