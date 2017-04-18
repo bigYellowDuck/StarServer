@@ -19,14 +19,7 @@ class EventLoop : public Noncopyable {
 
     ~EventLoop() {}
 
-    void loop() {
-
-        quit_ = false;
-
-        while (!quit_) {
-            poller_->loop_once(-1);
-        }    
-    }
+    void loop();
    
     void addChannel(Channel* ch) { poller_->addChannel(ch); }
     void updateChannel(Channel* ch) { poller_->updateChannel(ch); }
