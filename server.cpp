@@ -5,10 +5,12 @@
 
 namespace star {
 
-Server::Server(EventLoop *loop, int port)
-    : loop_(loop),
-      acceptor_(loop, port) {
-    acceptor_.setNewConnectionCallback([this](int sockfd, struct sockaddr_in* addr) {
+Server::Server(int port)
+    : loop_(),
+      acceptor_(&loop_, port),
+      nextConnId_(0) {
+    acceptor_.setNewConnectionCallback(
+        [this](int sockfd, struct sockaddr_in* addr) {
         newConnection(sockfd, addr);
     });      
 }
@@ -16,14 +18,17 @@ Server::Server(EventLoop *loop, int port)
 void Server::start() {
     trace("start running server");
     acceptor_.listen();
-    loop_->loop();
+    loop_.loop();
 }
 
 void Server::newConnection(int sockfd, struct sockaddr_in* addr) {
-    trace("server accept a new connection");
+    ++nextConnId_;
+    char buf[32];
+    snprintf(buf, sizeof(buf), "#%d", nextConnId_);
+    trace("server accept a new connectioni %s", buf);
     (void)addr;
-    char buf[32] = "Hello, I am server!";
-    int n = ::write(sockfd, buf, sizeof(buf));
+    char buf2[32] = "Hello, I am server!";
+    int n = ::write(sockfd, buf2, sizeof(buf));
 }
 
 }  // end of namespace stat

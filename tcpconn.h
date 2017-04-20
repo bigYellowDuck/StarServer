@@ -1,19 +1,23 @@
-#ifndef STARSERVER_SERVER_H
-#define STARSERVER_SERVER_H
+#ifndef STARSERVER_TCPCONN_H
+#define STARSERVER_TCPCONN_H
+
+#include <memory>
 
 #include "util.h"
 #include "eventloop.h"
-#include "acceptor.h"
-#include "tcpconn.h"
 
 namespace star {
 
-class Server : public Noncopyable {
+class Socket;
+class TcpConnection;
+using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
+using ConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
+using MessageCallback = std::function<void(const TcpConnectionPtr&, const char*, size_t)>;
+
+class TcpConnection : public Noncopyable, 
+                      public std::enable_shared_from_this<TcpConnectionPtr> {
   public:
-    Server() = delete;
-    explicit Server(int port);
-    
-    void start();
+    TcpConnection(EventLoop* loop, int sockfd, int connId); 
 
     void setConnectionCallback(const ConnectionCallback& callback) {
         connectionCallback_ = callback;
@@ -32,17 +36,16 @@ class Server : public Noncopyable {
     }
 
   private:
-    void newConnection(int sockfd, struct sockaddr_in* addr);
-    
-    EventLoop loop_;
-    Acceptor acceptor_;
-
-    int nextConnId_;
+    EventLoop* loop_;
+    std::unique_ptr<Socket> socket_;
+    int connId_;
 
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
 };
 
+
+
 }  // end of namespace star
 
-#endif // STARSERVER_SERVER_H
+#endif // STARSERVER_TCPCONN_H
