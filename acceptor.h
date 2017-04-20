@@ -41,10 +41,12 @@ class Socket : public Noncopyable {
 
 
 class Acceptor : public Noncopyable {
-    using NewConnectionCallback = std::function<void(int, sockaddr_in*)>;
+    using NewConnectionCallback = std::function<void(int, struct sockaddr_in*)>;
   public:
     Acceptor(EventLoop* loop, int port);
     ~Acceptor();
+
+    void listen();
 
     void handleRead();
     
@@ -55,6 +57,9 @@ class Acceptor : public Noncopyable {
     void setNewConnectionCallback(NewConnectionCallback&& callback) {
         newConnectCallback_ = std::move(callback);
     }
+
+    EventLoop* eventLoop() const noexcept { return loop_; }
+    int port() const noexcept { return port_; }
   private:
     EventLoop* loop_;
     Socket socket_;

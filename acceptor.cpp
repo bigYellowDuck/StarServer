@@ -63,16 +63,21 @@ Acceptor::Acceptor(EventLoop* loop, int port)
     
     socket_.bindOrDie(&addr_);
     socket_.setReuseAddr(true);
+}
+
+Acceptor::~Acceptor() {
+}
+
+void Acceptor::listen() {
     socket_.listenOrDie();
     
+    socket_.setNoDelay(true);
+
     channel_.setReadCallBack([this]{handleRead();});    
     channel_.enableRead(true);
     channel_.addToPoller();
 
     trace("acceptor listening");
-}
-
-Acceptor::~Acceptor() {
 }
 
 void Acceptor::handleRead() {
@@ -86,6 +91,7 @@ void Acceptor::handleRead() {
         if (newConnectCallback_)
             newConnectCallback_(connfd, &addr_);
     } else {
+        trace("accept error %d %s", errno, strerror(errno));
         close(connfd);
     }
 
