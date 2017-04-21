@@ -2,9 +2,11 @@
 #define STARSERVER_TCPCONN_H
 
 #include <memory>
+#include <functional>
 
 #include "util.h"
 #include "eventloop.h"
+#include "channel.h"
 
 namespace star {
 
@@ -15,7 +17,7 @@ using ConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
 using MessageCallback = std::function<void(const TcpConnectionPtr&, const char*, size_t)>;
 
 class TcpConnection : public Noncopyable, 
-                      public std::enable_shared_from_this<TcpConnectionPtr> {
+                      public std::enable_shared_from_this<TcpConnection> {
   public:
     TcpConnection(EventLoop* loop, int sockfd, int connId); 
 
@@ -35,10 +37,22 @@ class TcpConnection : public Noncopyable,
         messageCallback_ = std::move(callback);
     }
 
+    void connectionEstablished();
+    
+    int connId() const noexcept { return connId_; }
+    bool connected() const noexcept { return state_ == KConnected; }
+
   private:
-    EventLoop* loop_;
+    enum State {kConnecting, KConnected};
+    void setState(State s) { state_ = s;}
+
+    void handleRead();
+
+    EventLoop* loop_;  
     std::unique_ptr<Socket> socket_;
+    Channel channel_;
     int connId_;
+    State state_;
 
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;

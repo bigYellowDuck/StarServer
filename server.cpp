@@ -8,7 +8,7 @@ namespace star {
 Server::Server(int port)
     : loop_(),
       acceptor_(&loop_, port),
-      nextConnId_(0) {
+      nextConnId_(1) {
     acceptor_.setNewConnectionCallback(
         [this](int sockfd, struct sockaddr_in* addr) {
         newConnection(sockfd, addr);
@@ -22,13 +22,18 @@ void Server::start() {
 }
 
 void Server::newConnection(int sockfd, struct sockaddr_in* addr) {
-    ++nextConnId_;
-    char buf[32];
+    char buf[16];
     snprintf(buf, sizeof(buf), "#%d", nextConnId_);
     trace("server accept a new connectioni %s", buf);
+    ++nextConnId_;
+
+    TcpConnectionPtr conn = std::make_shared<TcpConnection>(&loop_, sockfd, nextConnId_);
+    connections_[nextConnId_] = conn;
+    conn->setConnectionCallback(connectionCallback_);
+    conn->setMessageCallback(messageCallback_);
+    conn->connectionEstablished();
+
     (void)addr;
-    char buf2[32] = "Hello, I am server!";
-    int n = ::write(sockfd, buf2, sizeof(buf));
 }
 
 }  // end of namespace stat

@@ -6,9 +6,12 @@
 #include "acceptor.h"
 #include "tcpconn.h"
 
+#include <map>
+
 namespace star {
 
 class Server : public Noncopyable {
+    using ConnectionMap = std::map<int, TcpConnectionPtr>;
   public:
     Server() = delete;
     explicit Server(int port);
@@ -36,8 +39,8 @@ class Server : public Noncopyable {
     
     EventLoop loop_;
     Acceptor acceptor_;
-
     int nextConnId_;
+    ConnectionMap connections_;
 
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
