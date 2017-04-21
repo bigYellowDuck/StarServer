@@ -15,6 +15,7 @@ class TcpConnection;
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
 using ConnectionCallback = std::function<void(const TcpConnectionPtr&)>;
 using MessageCallback = std::function<void(const TcpConnectionPtr&, const char*, size_t)>;
+using CloseCallback = std::function<void(const TcpConnectionPtr&)>;
 
 class TcpConnection : public Noncopyable, 
                       public std::enable_shared_from_this<TcpConnection> {
@@ -37,16 +38,26 @@ class TcpConnection : public Noncopyable,
         messageCallback_ = std::move(callback);
     }
 
+    void setCloseCallback(const CloseCallback& callback) {
+        closeCallback_ = callback;
+    }
+    
+    void setCloseCallback(CloseCallback&& callback) {
+        closeCallback_ = std::move(callback);
+    }
+
     void connectionEstablished();
     
     int connId() const noexcept { return connId_; }
     bool connected() const noexcept { return state_ == KConnected; }
 
   private:
-    enum State {kConnecting, KConnected};
+    enum State {kConnecting, KConnected, kDisconnected};
     void setState(State s) { state_ = s;}
 
     void handleRead();
+    void handleClose();
+    void handleError();
 
     EventLoop* loop_;  
     std::unique_ptr<Socket> socket_;
@@ -56,6 +67,7 @@ class TcpConnection : public Noncopyable,
 
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
+    CloseCallback closeCallback_;
 };
 
 

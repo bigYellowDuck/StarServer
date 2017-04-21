@@ -34,6 +34,7 @@ class Server : public Noncopyable {
         messageCallback_ = std::move(callback);
     }
 
+    void removeConnection(const TcpConnectionPtr& conn);
   private:
     void newConnection(int sockfd, struct sockaddr_in* addr);
     

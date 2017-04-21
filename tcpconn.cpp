@@ -3,6 +3,7 @@
 #include "acceptor.h"
 
 #include <unistd.h>
+#include <string.h>
 
 namespace star {
 
@@ -33,11 +34,33 @@ void TcpConnection::handleRead() {
     trace("connection %d handleRead", connId_);
     char buf[65536];
     ssize_t n = ::read(channel_.fd(), buf, sizeof(buf));
-
-    trace("call messageCallback_");
-    if (messageCallback_) 
-        messageCallback_(shared_from_this(), buf, n);
+    
+    if (n>0) {
+        if (messageCallback_) { 
+            trace("call messageCallback");
+            messageCallback_(shared_from_this(), buf, n);
+        }
+    } else if (n==0) {
+        handleClose();
+    } else {
+        handleError();
+    }
 }
+
+void TcpConnection::handleClose() {
+    trace("TcpConnection::handleClose state = %d", state_);
+    channel_.enableReadWrite(false, false);
+    channel_.updateToPoller();
+    state_ = kDisconnected;
+
+    trace("connection %d disconnected", connId_);
+    closeCallback_(shared_from_this());
+}
+
+void TcpConnection::handleError() {
+    info("TcpConnectionPtr::handleError %d %s", errno, strerror(errno));
+}
+
 
 
 }  // end of namespace star
