@@ -7,6 +7,8 @@
 
 #include <netinet/in.h>
 
+#include <memory>
+
 namespace star {
 
 class Socket : public Noncopyable {
@@ -44,7 +46,6 @@ class Acceptor : public Noncopyable {
     using NewConnectionCallback = std::function<void(int, struct sockaddr_in*)>;
   public:
     Acceptor(EventLoop* loop, int port);
-    ~Acceptor();
 
     void listen();
 
@@ -58,13 +59,12 @@ class Acceptor : public Noncopyable {
         newConnectCallback_ = std::move(callback);
     }
 
-    EventLoop* eventLoop() const noexcept { return loop_; }
     int port() const noexcept { return port_; }
   private:
     EventLoop* loop_;
     Socket socket_;
     int port_;
-    Channel channel_;
+    std::unique_ptr<Channel> channel_;
     struct sockaddr_in addr_;
     NewConnectionCallback newConnectCallback_;
 };

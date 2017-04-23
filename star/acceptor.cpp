@@ -55,7 +55,7 @@ Acceptor::Acceptor(EventLoop* loop, int port)
     : loop_(loop),
       socket_(Socket::createTCP()),
       port_(port),
-      channel_(loop, socket_.fd()) { 
+      channel_(new Channel(loop, socket_.fd())) { 
     memset(&addr_, 0, sizeof(addr_));
     addr_.sin_family = AF_INET;
     addr_.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -65,17 +65,15 @@ Acceptor::Acceptor(EventLoop* loop, int port)
     socket_.setReuseAddr(true);
 }
 
-Acceptor::~Acceptor() {
-}
 
 void Acceptor::listen() {
     socket_.listenOrDie();
     
     socket_.setNoDelay(true);
 
-    channel_.setReadCallBack([this]{handleRead();});    
-    channel_.enableRead(true);
-    channel_.addToPoller();
+    channel_->setReadCallBack([this]{handleRead();});    
+    channel_->enableRead(true);
+    channel_->addToPoller();
 
     trace("acceptor listening");
 }
@@ -85,7 +83,7 @@ void Acceptor::handleRead() {
     
     struct sockaddr_in addr;
     socklen_t addrlen;
-    int connfd = ::accept4(channel_.fd(), (struct sockaddr*)&addr, &addrlen, SOCK_NONBLOCK|SOCK_CLOEXEC);
+    int connfd = ::accept4(channel_->fd(), (struct sockaddr*)&addr, &addrlen, SOCK_NONBLOCK|SOCK_CLOEXEC);
     
     if (connfd >= 0) {
         if (newConnectCallback_)

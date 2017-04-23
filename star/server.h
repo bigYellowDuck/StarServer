@@ -6,6 +6,7 @@
 #include "acceptor.h"
 #include "tcpconn.h"
 
+#include <memory>
 #include <map>
 
 namespace star {
@@ -38,8 +39,8 @@ class Server : public Noncopyable {
   private:
     void newConnection(int sockfd, struct sockaddr_in* addr);
     
-    EventLoop loop_;
-    Acceptor acceptor_;
+    std::unique_ptr<EventLoop> loop_;
+    std::unique_ptr<Acceptor> acceptor_;
     int nextConnId_;
     ConnectionMap connections_;
 
