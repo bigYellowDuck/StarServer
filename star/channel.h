@@ -43,6 +43,7 @@ class Channel : public Noncopyable {
     void enableReadWrite(bool readable, bool writable);
     bool readEnabled();
     bool writeEnabled();
+    bool isWriting() const noexcept { return events_ & kWriteEvent; }
 
     void handleRead();
     void handleWrite();
