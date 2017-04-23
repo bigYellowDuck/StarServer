@@ -21,6 +21,7 @@ class TcpConnection : public Noncopyable,
                       public std::enable_shared_from_this<TcpConnection> {
   public:
     TcpConnection(EventLoop* loop, int sockfd, int connId); 
+    ~TcpConnection();
 
     void setConnectionCallback(const ConnectionCallback& callback) {
         connectionCallback_ = callback;
@@ -61,7 +62,7 @@ class TcpConnection : public Noncopyable,
 
     EventLoop* loop_;  
     std::unique_ptr<Socket> socket_;
-    Channel channel_;
+    std::unique_ptr<Channel> channel_;
     int connId_;
     State state_;
 

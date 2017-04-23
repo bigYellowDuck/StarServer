@@ -12,17 +12,22 @@ TcpConnection::TcpConnection(EventLoop* loop,
                              int connId) 
     : loop_(loop),
       socket_(new Socket(sockfd)),
-      channel_(loop_, sockfd),
+      channel_(new Channel(loop_, sockfd)),
       connId_(connId),
       state_(kConnecting) {
     
 }
 
+TcpConnection::~TcpConnection() {
+    if (state_ == kDisconnected)
+        trace("TcpConnection %d destoryed", connId_);
+}
+
 void TcpConnection::connectionEstablished() {
     trace("connection %d established", connId_);
-    channel_.setReadCallBack([this]{handleRead();});
-    channel_.enableRead(true);
-    channel_.addToPoller();
+    channel_->setReadCallBack([this]{handleRead();});
+    channel_->enableRead(true);
+    channel_->addToPoller();
     setState(KConnected);
 
     trace("call connectionCallback");
@@ -33,7 +38,7 @@ void TcpConnection::connectionEstablished() {
 void TcpConnection::handleRead() {
     trace("connection %d handleRead", connId_);
     char buf[65536];
-    ssize_t n = ::read(channel_.fd(), buf, sizeof(buf));
+    ssize_t n = ::read(channel_->fd(), buf, sizeof(buf));
     
     if (n>0) {
         if (messageCallback_) { 
@@ -48,9 +53,8 @@ void TcpConnection::handleRead() {
 }
 
 void TcpConnection::handleClose() {
-    trace("TcpConnection::handleClose state = %d", state_);
-    channel_.enableReadWrite(false, false);
-    channel_.updateToPoller();
+    channel_->enableReadWrite(false, false);
+    channel_->updateToPoller();
     state_ = kDisconnected;
 
     trace("connection %d disconnected", connId_);
