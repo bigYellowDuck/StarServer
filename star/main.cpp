@@ -28,10 +28,12 @@ int main() {
             }); 
 
     server.setMessageCallback(
-            [](const TcpConnectionPtr& conn, const char* data, ssize_t len){
-                printf("onMessage():received %ld bytes from connection\n", len);
+            [](const TcpConnectionPtr& conn, ReadBuffer* buffer){
+                printf("onMessage():received %ld bytes from connection\n", buffer->len());
                 printf("conntion id %d\n", conn->connId());
-                ::write(2, data, len);
+                //conn->send("test TcpConnection::send hahahahahahaha ahahahax\n");
+                const string str = buffer->retrieveAsString();
+                conn->send(str);
             });
 
     server.start();
