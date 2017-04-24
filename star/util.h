@@ -17,6 +17,11 @@ class Noncopyable {
     ~Noncopyable() {}
 };
 
+class Util : public Noncopyable {
+  public:
+    static int createEventfd();
+};
+
 } // end of namespace star
 
 #endif // STARSERVER_UTIL_H
