@@ -18,6 +18,7 @@ int main() {
     setloglevel("TRACE");
     
     Server server(12345);
+    server.setThreadNum(4);
     server.setConnectionCallback(
             [](const TcpConnectionPtr& conn) {
                 if (conn->connected()) {
@@ -35,7 +36,7 @@ int main() {
                 const string str = buffer->retrieveAsString();
                 conn->send(str);
             });
-
+    
     server.start();
 
     return 0;
