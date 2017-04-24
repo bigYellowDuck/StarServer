@@ -6,7 +6,7 @@ ThreadPool::ThreadPool(size_t threads, bool start)
     : tasks_(),
       threads_(threads),
       running_(false) {
-    if (start) {
+    if (start && threads > 0) {
         this->start();
     }
 }
@@ -20,7 +20,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::start() {
-    if (running_)
+    if (running_ || threads_.size() <= 0)
         return;
 
     for (auto& th : threads_) {
