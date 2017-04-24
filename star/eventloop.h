@@ -3,31 +3,58 @@
 
 #include "util.h"
 #include "epoller.h"
+#include "threads.h"
 
 #include <memory>
 #include <atomic>
+#include <vector>
 
 namespace star {
 
 class EventLoop : public Noncopyable {
+    using Task = std::function<void()>;
   public: 
-    EventLoop()
-        : quit_(false),
-          poller_(new Epoller) {
-    
-    }
-
-    ~EventLoop() {}
+    EventLoop();
 
     void loop();
-   
+
+    bool isInLoopThread() const noexcept;
+    void runInLoopThread(const Task& task) { runInLoopThread(Task(task)); }
+    void runInLoopThread(Task&& task);
+    
     void addChannel(Channel* ch) { poller_->addChannel(ch); }
     void updateChannel(Channel* ch) { poller_->updateChannel(ch); }
     void removeChannel(Channel* ch) { poller_->removeChannel(ch); }
 
   private:
+    void queueInLoop(Task&& task);
+    void wakeup();
+    void doPendingTasks();
+
+    std::thread::id tid_;
     std::atomic<bool> quit_;
     std::unique_ptr<AbstractPoller> poller_;
+    bool callingPendingTasks_;
+    int wakeupFd_;
+    std::unique_ptr<Channel> wakeupChannel_;
+    std::mutex mutex_;
+    std::vector<Task> pendingTasks_;
+};
+
+class MultiEventLoop : public Noncopyable {
+  public:
+    MultiEventLoop(EventLoop* baseLoop);
+    ~MultiEventLoop();
+    void setThreadNum(int numThreads) { numThreads_ = numThreads; }
+    void start();
+    EventLoop* getNextLoop();
+  private:
+    EventLoop* baseLoop_;
+    bool started_;
+    int numThreads_;
+    int next_;
+    std::vector<std::unique_ptr<EventLoop>> loops_;
+    std::unique_ptr<ThreadPool> threadPool_;
 };
 
 }  // end of namespace star
