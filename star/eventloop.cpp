@@ -1,4 +1,8 @@
 #include "eventloop.h"
+#include "logging.h"
+
+#include <stdio.h>
+#include <signal.h>
 
 namespace star {
 
@@ -10,5 +14,13 @@ void EventLoop::loop() {
     }
 }
 
+class IgnoreSigPipe {
+  public:
+    IgnoreSigPipe() {
+        ::signal(SIGPIPE, SIG_IGN);
+    }
+};
+
+IgnoreSigPipe initObj;
 
 }  // end of namespace star
