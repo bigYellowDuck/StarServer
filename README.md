@@ -13,7 +13,7 @@ sudo make && make install
 
 Server sever(12345);       // 监听12345端口
 server.setThreadNum(4);    // 设置4个工作线程，不设置则在IO线程里进行事件处理
-server.setMessageCallback(       // 设置读入数据回调
+server.setMessageCallback([]{       // 设置读入数据回调
       const string str = buffer->retrieveAsString();
       conn->send(str);
     });
