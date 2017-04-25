@@ -23,6 +23,10 @@ int createEventfd();
 
 pid_t gettid();
 
+int64_t microSecondSinceEpoch();
+
+std::string moment(bool showMicroSeconds=false);    
+
 } // end of namespace util 
 
 } // end of namespace star
