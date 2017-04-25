@@ -1,3 +1,4 @@
+![](doc/logo.png)
 StarServer
 ===
 StarServer是一个稍显简陋的异步非阻塞网络库，使用`C++11`开发。<br>StarServer设计目标是：使用简单。
@@ -19,10 +20,17 @@ server.setConnectionCallback(    // 设置新连接回调
 
 server.setMessageCallback(       // 设置读入数据回调
     [](const TcpConnectionPtr& conn, ReadBuffer* buffer){
-      printf("%s connection %d messageCallback:received %ld bytes from connection\n", util::moment().data(), conn->connId(), buffer->len());
+      printf("%s connection %d messageCallback:received %ld bytes from connection\n", 
+             util::moment().data(), conn->connId(), buffer->len());
       const string str = buffer->retrieveAsString();
       conn->send(str);
     });
     
 server.start();    // 启动服务器
 ```
+
+将会完善的事情
+---
+- 定时器
+- 安全推出
+- 集成HTTP服务器
