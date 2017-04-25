@@ -33,8 +33,10 @@ Logger::~Logger() {
         close(fd_);
 }
 
+static thread_local pid_t t_tid;
 void Logger::logv(int level, const char *file, int line, const char *fmt ...) {
-    // tid
+    if (__builtin_expect(t_tid==0, 0))
+        t_tid = util::gettid();
     
     if (level < level_) {
         return;
@@ -50,7 +52,7 @@ void Logger::logv(int level, const char *file, int line, const char *fmt ...) {
     struct tm t;
     localtime_r(&seconds, &t);
     p += snprintf(p, limit-p,
-            "%04d/%02d/%02d-%02d:%02d:%02d.%06d %s %s:%d -  ",
+            "%04d/%02d/%02d-%02d:%02d:%02d.%06d %d %s %s:%d -  ",
             t.tm_year + 1900,
             t.tm_mon + 1,
             t.tm_mday,
@@ -58,6 +60,7 @@ void Logger::logv(int level, const char *file, int line, const char *fmt ...) {
             t.tm_min,
             t.tm_sec,
             static_cast<int>(now_tv.tv_usec),
+            static_cast<int>(t_tid),
             levelStrs_[level],
             file,
             line);

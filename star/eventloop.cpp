@@ -24,7 +24,7 @@ EventLoop::EventLoop()
       quit_(false),
       poller_(new Epoller),
       callingPendingTasks_(false),
-      wakeupFd_(Util::createEventfd()),
+      wakeupFd_(util::createEventfd()),
       wakeupChannel_(new Channel(this, wakeupFd_)) {
     wakeupChannel_->enableRead(true);
     wakeupChannel_->setReadCallBack(
