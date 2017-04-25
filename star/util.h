@@ -17,10 +17,13 @@ class Noncopyable {
     ~Noncopyable() {}
 };
 
-class Util : public Noncopyable {
-  public:
-    static int createEventfd();
-};
+namespace util {
+
+int createEventfd();
+
+pid_t gettid();
+
+} // end of namespace util 
 
 } // end of namespace star
 
