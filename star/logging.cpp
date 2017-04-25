@@ -45,25 +45,11 @@ void Logger::logv(int level, const char *file, int line, const char *fmt ...) {
     char buffer[4*1024];
     char *p = buffer;
     char *limit = buffer+sizeof(buffer);
-
-    struct timeval now_tv;
-    gettimeofday(&now_tv, NULL);
-    const time_t seconds = now_tv.tv_sec;
-    struct tm t;
-    localtime_r(&seconds, &t);
+    
+    const std::string moment(util::moment(true));
     p += snprintf(p, limit-p,
-            "%04d/%02d/%02d-%02d:%02d:%02d.%06d %d %s %s:%d -  ",
-            t.tm_year + 1900,
-            t.tm_mon + 1,
-            t.tm_mday,
-            t.tm_hour,
-            t.tm_min,
-            t.tm_sec,
-            static_cast<int>(now_tv.tv_usec),
-            static_cast<int>(t_tid),
-            levelStrs_[level],
-            file,
-            line);
+            "%s %d %s %s:%d -  ",
+            moment.data(), static_cast<int>(t_tid), levelStrs_[level], file, line);
 
     va_list args;
     va_start(args, fmt);
