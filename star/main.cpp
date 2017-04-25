@@ -22,7 +22,7 @@ int main() {
     server.setConnectionCallback(
             [](const TcpConnectionPtr& conn) {
                 if (conn->connected()) {
-                    printf("onConnection(): new connection\n");
+                    printf("%s connectionCallback:new connection %d.\n", util::moment().data(), conn->connId());
                 } else {
                     printf("failed\n");
                 }
@@ -30,9 +30,7 @@ int main() {
 
     server.setMessageCallback(
             [](const TcpConnectionPtr& conn, ReadBuffer* buffer){
-                printf("onMessage():received %ld bytes from connection\n", buffer->len());
-                printf("conntion id %d\n", conn->connId());
-                //conn->send("test TcpConnection::send hahahahahahaha ahahahax\n");
+                printf("%s connection %d messageCallback:received %ld bytes from connection\n", util::moment().data(), conn->connId(), buffer->len());
                 const string str = buffer->retrieveAsString();
                 conn->send(str);
             });
