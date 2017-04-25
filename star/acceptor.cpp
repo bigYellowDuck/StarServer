@@ -82,7 +82,7 @@ void Acceptor::handleRead() {
     trace("acceptor handleRead");
     
     struct sockaddr_in addr;
-    socklen_t addrlen;
+    socklen_t addrlen = sizeof(struct sockaddr_in);
     int connfd = ::accept4(channel_->fd(), (struct sockaddr*)&addr, &addrlen, SOCK_NONBLOCK|SOCK_CLOEXEC);
     
     if (connfd >= 0) {
