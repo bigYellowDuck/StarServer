@@ -4,7 +4,8 @@ StarServer是一个稍显简陋的异步非阻塞网络库(使用epoll(7))，使
 
 ### 安装
 ```cpp
-sudo make && make install
+sudo make
+sudo make install
 ```
 
 
@@ -26,5 +27,6 @@ server.start();    // 启动服务器
 
 - 使用poll(2)机制实现Poller calss
 - 定时器
-- 安全退出
+- ~~安全退出~~
 - 集成HTTP服务器
+- 性能测试
