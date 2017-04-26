@@ -1,6 +1,6 @@
 AR = ar
-CXX = clang++
-CXXFLAGS =-I. -O2 -std=c++11
+CXX = g++
+CXXFLAGS =-I. -O2 -std=c++11 
 LDFFLAGS = -pthread
 
 STAR_SOURCES += ${shell find star -name '*.cpp'}
