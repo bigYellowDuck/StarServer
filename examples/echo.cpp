@@ -1,6 +1,9 @@
 #include <star/star.h>
 #include <stdio.h>
 
+#include <unistd.h>
+#include <signal.h>
+
 using namespace star;
 using namespace std;
 
@@ -9,6 +12,7 @@ int main() {
     setloglevel("TRACE");
     
     Server server(12345);
+    server.signal(SIGINT, [&server]{ server.exit();});
     server.setThreadNum(4);
     server.setConnectionCallback(
             [](const TcpConnectionPtr& conn) {
