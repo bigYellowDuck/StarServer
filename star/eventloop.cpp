@@ -44,6 +44,13 @@ void EventLoop::loop() {
     }
 }
 
+void EventLoop::exit() {
+   assert(!quit_);
+   quit_ = true;
+   wakeup();
+   trace("EventLoop::exit");
+}
+
 bool EventLoop::isInLoopThread() const noexcept {
     return tid_ == std::this_thread::get_id();
 }
@@ -120,6 +127,18 @@ void MultiEventLoop::start() {
                 loops_[i]->loop();
         });
     }
+}
+
+void MultiEventLoop::exit() {
+    assert(started_);
+    started_ = false;
+    trace("MultiEventLoop::exiting");
+    for (int i=0; i<numThreads_; ++i) {
+        loops_[i]->exit();
+    }
+    threadPool_->exit();
+    threadPool_->join();
+    trace("MultiEventLoop::exited");
 }
 
 // Only can be called in baseLoop

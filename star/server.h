@@ -13,11 +13,16 @@ namespace star {
 
 class Server : public Noncopyable {
     using ConnectionMap = std::map<int, TcpConnectionPtr>;
+    using SignalCallback = std::function<void()>;
   public:
     Server() = delete;
     explicit Server(int port);
     
     void start();
+
+    void exit();
+
+    void signal(int signo, const SignalCallback& callback);
 
     void setConnectionCallback(const ConnectionCallback& callback) {
         connectionCallback_ = callback;
@@ -41,12 +46,14 @@ class Server : public Noncopyable {
   private:
     void newConnection(int sockfd, struct sockaddr_in* addr);
     
+    bool running_;
     std::unique_ptr<EventLoop> loop_;
     std::unique_ptr<Acceptor> acceptor_;
     std::unique_ptr<MultiEventLoop> multiLoop_;
     int nextConnId_;
     ConnectionMap connections_;
-    
+    std::vector<std::unique_ptr<Channel>> signalChannels_;
+
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
 };

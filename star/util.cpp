@@ -1,11 +1,15 @@
 #include "util.h"
 #include "logging.h"
+#include "channel.h"
+#include "eventloop.h"
 
 #include <sys/eventfd.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/signalfd.h>
+#include <signal.h>
 
 namespace star {
 

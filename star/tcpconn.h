@@ -22,7 +22,7 @@ using CloseCallback = std::function<void(const TcpConnectionPtr&)>;
 
 class Buffer : public Noncopyable {
   public:
-    Buffer():endOfData_(0) { buf_.resize(65536); }
+    Buffer():buf_(),endOfData_(0) { buf_.resize(65536); }
     void append(const char* data, size_t len) {
         if (avail() > len) {
            copy(data, data+len, buf_.begin()+endOfData_); 

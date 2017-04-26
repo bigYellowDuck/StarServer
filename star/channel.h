@@ -9,6 +9,7 @@ namespace star{
 class Channel : public Noncopyable {
     using EventCallBack = std::function<void()>;
   public:
+    Channel() = delete;
     Channel(EventLoop* loop_, int fd);
     ~Channel();
 

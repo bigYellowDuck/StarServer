@@ -17,6 +17,7 @@ class EventLoop : public Noncopyable {
     EventLoop();
 
     void loop();
+    void exit();
 
     bool isInLoopThread() const noexcept;
     void runInLoopThread(const Task& task) { runInLoopThread(Task(task)); }
@@ -47,6 +48,7 @@ class MultiEventLoop : public Noncopyable {
     ~MultiEventLoop();
     void setThreadNum(int numThreads) { numThreads_ = numThreads; }
     void start();
+    void exit();
     EventLoop* getNextLoop();
   private:
     EventLoop* baseLoop_;
