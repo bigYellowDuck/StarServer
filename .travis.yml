@@ -1,5 +1,5 @@
-language:cpp
+language: cpp
 
-complier:g++
+complier: g++
 
-script:make && sudo make install
+script: make && sudo make install
