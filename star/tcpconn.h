@@ -86,6 +86,8 @@ class WriteBuffer : public Buffer {
 class TcpConnection : public Noncopyable, 
                       public std::enable_shared_from_this<TcpConnection> {
   public:
+    enum State {kConnecting, KConnected, kDisconnecting, kDisconnected};
+    
     TcpConnection(EventLoop* loop, int sockfd, int connId); 
     ~TcpConnection();
 
@@ -117,16 +119,22 @@ class TcpConnection : public Noncopyable,
     
     int connId() const noexcept { return connId_; }
     bool connected() const noexcept { return state_ == KConnected; }
+    State state() const noexcept { return state_; }
 
-    void send(const std::string& message);
+    void send(const std::string& message) { send(std::string(message)); }
+    void send(std::string&& message);
+    void shutdown();
+
   private:
-    enum State {kConnecting, KConnected, kDisconnected};
     void setState(State s) { state_ = s;}
 
     void handleRead();
     void handleWrite();
     void handleClose();
     void handleError();
+    void sendInLoopThread(const std::string& message);
+    void sendInLoopThread(std::string&& message);
+    void shutdownInLoopThread();
 
     EventLoop* loop_;  
     std::unique_ptr<Socket> socket_;

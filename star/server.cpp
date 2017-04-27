@@ -50,7 +50,8 @@ void Server::signal(int signo, const SignalCallback& callback) {
     signalChannel->setReadCallBack(
             [sfd, callback] {
                 struct signalfd_siginfo si;
-                ::read(sfd, &si, sizeof(si));
+                ssize_t r = ::read(sfd, &si, sizeof(si));
+                assert(r==sizeof(si));
                 callback();
         });
     signalChannel->addToPoller();
@@ -72,8 +73,9 @@ void Server::newConnection(int sockfd, struct sockaddr_in* addr) {
     char buf[16];
     snprintf(buf, sizeof(buf), "#%d", nextConnId_);
     trace("server accept a new connection %s", buf);
-
-    EventLoop* ioLoop = multiLoop_->getNextLoop();
+    
+    EventLoop* ioLoop = multiLoop_ ? multiLoop_->getNextLoop() : loop_.get();
+    
     TcpConnectionPtr conn = std::make_shared<TcpConnection>(ioLoop, sockfd, nextConnId_);
     connections_[nextConnId_] = conn;
     conn->setConnectionCallback(connectionCallback_);

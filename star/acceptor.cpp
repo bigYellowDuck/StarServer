@@ -32,6 +32,11 @@ int Socket::connect(const struct sockaddr_in* addr) {
     return ::connect(fd_, (const struct sockaddr*)addr, sizeof(sockaddr_in));
 }
 
+void Socket::shutdownWrite() {
+    int r = ::shutdown(fd_, SHUT_WR);
+    fatalif(r<0, "Socket::shutdownWrite failed %d %s", errno, strerror(errno));
+}
+
 void Socket::setReuseAddr(bool on) {
     int optval = on ? 1 : 0;
     int r = ::setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
@@ -60,9 +65,11 @@ Acceptor::Acceptor(EventLoop* loop, int port)
     addr_.sin_family = AF_INET;
     addr_.sin_addr.s_addr = htonl(INADDR_ANY);
     addr_.sin_port = htons(port_);
-    
-    socket_.bindOrDie(&addr_);
+   
     socket_.setReuseAddr(true);
+    socket_.bindOrDie(&addr_);
+    channel_->enableReadWrite(false,false);
+    channel_->addToPoller();
 }
 
 
@@ -73,7 +80,7 @@ void Acceptor::listen() {
 
     channel_->setReadCallBack([this]{handleRead();});    
     channel_->enableRead(true);
-    channel_->addToPoller();
+    channel_->updateToPoller();
 
     trace("acceptor listening");
 }
