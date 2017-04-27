@@ -47,6 +47,7 @@ class MultiEventLoop : public Noncopyable {
     MultiEventLoop(EventLoop* baseLoop);
     ~MultiEventLoop();
     void setThreadNum(int numThreads) { numThreads_ = numThreads; }
+    int threads() const noexcept { return numThreads_; }
     void start();
     void exit();
     EventLoop* getNextLoop();

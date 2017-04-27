@@ -11,16 +11,15 @@ Epoller::Epoller()
     : activeFds_(-1) {
     fd_ = epoll_create1(EPOLL_CLOEXEC);
     fatalif(fd_<0, "epoll create error %d %s", errno, strerror(errno));
-    info("epoller fd %d created", fd_);
+    trace("epoller fd %d created", fd_);
 }
 
 Epoller::~Epoller() {
-    info("destroying poller %d", fd_);
     while (liveChannels_.size()) {
         (*liveChannels_.begin())->close();
     } 
     ::close(fd_);
-    info("poller %d destoryed", fd_);
+    trace("poller %d destoryed", fd_);
 }
 
 void Epoller::addChannel(Channel* ch) {
@@ -85,7 +84,7 @@ void Epoller::loop_once(int waitMs) {
                 ch->handleWrite();
             }
             if (events & EPOLLERR) {
-                info("channel %lld fd %d handle error", (long long)ch->id(), ch->fd());
+                error("channel %lld fd %d handle error", (long long)ch->id(), ch->fd());
                 ch->handleError();
             }
         }

@@ -37,7 +37,7 @@ EventLoop::EventLoop()
 
 void EventLoop::loop() {
     quit_ = false;
-    info("EventLoop::loop");
+    trace("EventLoop::loop");
     while (!quit_) {
         poller_->loop_once(-1);
         doPendingTasks();
@@ -110,11 +110,7 @@ void MultiEventLoop::start() {
     assert(!started_);
     started_ = true;
     trace("MultiEventLoop::start -  %d threads run", numThreads_);
-/*    
-    for (int i=0; i<numThreads_; ++i) {
-        loops_[i] = std::move(std::unique_ptr<EventLoop>(new EventLoop));
-    }
-*/    
+    
     std::unique_ptr<ThreadPool> threadPool(new ThreadPool(numThreads_, false));
     threadPool_.swap(threadPool);
     threadPool_->start();
@@ -143,7 +139,6 @@ void MultiEventLoop::exit() {
 
 // Only can be called in baseLoop
 EventLoop* MultiEventLoop::getNextLoop() {
-    assert(started_);
     EventLoop* loop = baseLoop_;
 
     if (!loops_.empty()) {
@@ -154,7 +149,6 @@ EventLoop* MultiEventLoop::getNextLoop() {
             next_ = 0;
         }
     }
-
     return loop;
 }
 
