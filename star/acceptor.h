@@ -32,6 +32,8 @@ class Socket : public Noncopyable {
 
     int connect(const struct sockaddr_in* addr);
 
+    void shutdownWrite();
+
     void setReuseAddr(bool on);
     void setNoDelay(bool on);
 

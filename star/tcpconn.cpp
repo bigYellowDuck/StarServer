@@ -107,10 +107,25 @@ void TcpConnection::handleClose() {
 }
 
 void TcpConnection::handleError() {
-    info("TcpConnectionPtr::handleError %d %s", errno, strerror(errno));
+    error("TcpConnectionPtr::handleError %d %s", errno, strerror(errno));
 }
 
-void TcpConnection::send(const std::string& message) {
+
+void TcpConnection::send(std::string&& message) {
+    if (state_ == KConnected) {
+        if (loop_->isInLoopThread()) {
+            sendInLoopThread(message);
+        } else {
+            loop_->runInLoopThread([this, message]{sendInLoopThread(message);});
+        }
+    }
+}
+
+void TcpConnection::sendInLoopThread(const std::string& message) {
+    sendInLoopThread(std::string(message));
+}
+
+void TcpConnection::sendInLoopThread(std::string&& message) {
     ssize_t nwrote = 0;
     if (!channel_->isWriting() && writeBuffer_.empty()) {
         nwrote = ::write(channel_->fd(), message.data(), message.size());
@@ -125,12 +140,25 @@ void TcpConnection::send(const std::string& message) {
     }
 
     if (static_cast<size_t>(nwrote) < message.size()) {
-        writeBuffer_.append(message.data(), message.size());
+        writeBuffer_.append(message.data()+nwrote, message.size()-nwrote);
         if (!channel_->isWriting()) {
             channel_->setWriteCallBack([this]{handleWrite();});
             channel_->enableWrite(true);
             channel_->updateToPoller();
         }
+    }
+}
+
+void TcpConnection::shutdown() {
+    if (state_ == KConnected) {
+        setState(kDisconnecting);
+        loop_->runInLoopThread([this]{ shutdownInLoopThread();});
+    }
+}
+
+void TcpConnection::shutdownInLoopThread() {
+    if (!channel_->isWriting()) {
+        socket_->shutdownWrite();
     }
 }
 
