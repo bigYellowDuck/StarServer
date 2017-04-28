@@ -1,10 +1,10 @@
 #include "server.h" 
 #include "logging.h"
+#include "eventloop.h"
+#include "acceptor.h"
+#include "signal.h"
 
-#include <unistd.h>
 #include <string.h>
-#include <signal.h>
-#include <sys/signalfd.h>
 
 namespace star {
 
@@ -12,6 +12,7 @@ Server::Server(int port)
     : running_(false),
       loop_(new EventLoop),
       acceptor_(new Acceptor(loop_.get(), port)),
+      signal_(new Signal(loop_.get())),
       nextConnId_(1) {
     acceptor_->setNewConnectionCallback(
         [this](int sockfd, struct sockaddr_in* addr) {
@@ -35,28 +36,12 @@ void Server::exit() {
     multiLoop_->exit();
 }
 
-void Server::signal(int signo, const SignalCallback& callback) {
-    sigset_t mask;
-    sigemptyset(&mask);
-    sigaddset(&mask, signo);
-    sigprocmask(SIG_BLOCK, &mask, NULL);
+void Server::signal(int signo, SignalCallback&& callback) {
+    signal_->signal(signo, std::move(callback));
+}
 
-    int sfd = ::signalfd(-1, &mask, SFD_NONBLOCK|SFD_CLOEXEC);
-    fatalif(sfd<0, "Server::signal failed %d %s", errno, strerror(errno));
-
-    std::unique_ptr<Channel> signalChannel(new Channel(loop_.get(), sfd));
-    
-    signalChannel->enableRead(true);
-    signalChannel->setReadCallBack(
-            [sfd, callback] {
-                struct signalfd_siginfo si;
-                ssize_t r = ::read(sfd, &si, sizeof(si));
-                assert(r==sizeof(si));
-                callback();
-        });
-    signalChannel->addToPoller();
-    signalChannels_.push_back(std::move(signalChannel));
-    trace("Server::signal finish");
+void Server::cancelSignal(int signo) {
+    signal_->cancel(signo);
 }
 
 void Server::removeConnection(const TcpConnectionPtr& conn) {

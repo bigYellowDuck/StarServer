@@ -2,14 +2,19 @@
 #define STARSERVER_SERVER_H
 
 #include "util.h"
-#include "eventloop.h"
-#include "acceptor.h"
 #include "tcpconn.h"
+
+#include <netinet/in.h>
 
 #include <memory>
 #include <map>
 
 namespace star {
+
+class EventLoop;
+class MultiEventLoop;
+class Acceptor;
+class Signal; 
 
 class Server : public Noncopyable {
     using ConnectionMap = std::map<int, TcpConnectionPtr>;
@@ -22,7 +27,12 @@ class Server : public Noncopyable {
 
     void exit();
 
-    void signal(int signo, const SignalCallback& callback);
+    void signal(int signo, const SignalCallback& callback) {
+        signal(signo, SignalCallback(callback));
+    }
+
+    void signal(int signo, SignalCallback&& callback);
+    void cancelSignal(int signo);
 
     void setConnectionCallback(const ConnectionCallback& callback) {
         connectionCallback_ = callback;
@@ -50,10 +60,10 @@ class Server : public Noncopyable {
     std::unique_ptr<EventLoop> loop_;
     std::unique_ptr<Acceptor> acceptor_;
     std::unique_ptr<MultiEventLoop> multiLoop_;
+    std::unique_ptr<Signal> signal_;
     int nextConnId_;
     ConnectionMap connections_;
-    std::vector<std::unique_ptr<Channel>> signalChannels_;
-
+    
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
 };
