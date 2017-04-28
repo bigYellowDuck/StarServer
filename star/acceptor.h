@@ -1,15 +1,16 @@
 #ifndef STARSERVER_ACCEPTOR_H
 #define STARSERVER_ACCEPTOR_H
 
-#include "logging.h"
-#include "eventloop.h"
-#include "channel.h"
+#include "util.h"
 
 #include <netinet/in.h>
 
 #include <memory>
 
 namespace star {
+
+class EventLoop;
+class Channel;
 
 class Socket : public Noncopyable {
   public:
@@ -48,6 +49,7 @@ class Acceptor : public Noncopyable {
     using NewConnectionCallback = std::function<void(int, struct sockaddr_in*)>;
   public:
     Acceptor(EventLoop* loop, int port);
+    ~Acceptor();
 
     void listen();
 

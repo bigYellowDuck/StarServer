@@ -15,6 +15,7 @@ class EventLoop : public Noncopyable {
     using Task = std::function<void()>;
   public: 
     EventLoop();
+    ~EventLoop();
 
     void loop();
     void exit();

@@ -2,6 +2,7 @@
 #include "logging.h"
 #include "acceptor.h"
 #include "channel.h"
+#include "eventloop.h"
 
 #include <unistd.h>
 #include <string.h>

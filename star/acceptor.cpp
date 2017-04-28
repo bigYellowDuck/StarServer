@@ -1,5 +1,7 @@
 #include "acceptor.h"
 #include "logging.h"
+#include "eventloop.h"
+#include "channel.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -72,6 +74,9 @@ Acceptor::Acceptor(EventLoop* loop, int port)
     channel_->addToPoller();
 }
 
+Acceptor::~Acceptor() {
+
+}
 
 void Acceptor::listen() {
     socket_.listenOrDie();

@@ -35,6 +35,10 @@ EventLoop::EventLoop()
     wakeupChannel_->addToPoller();
 }
 
+EventLoop::~EventLoop() {
+
+}
+
 void EventLoop::loop() {
     quit_ = false;
     trace("EventLoop::loop");

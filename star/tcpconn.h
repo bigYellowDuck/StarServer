@@ -1,17 +1,17 @@
 #ifndef STARSERVER_TCPCONN_H
 #define STARSERVER_TCPCONN_H
 
-
 #include <memory>
 #include <functional>
 #include <string>
 #include <algorithm>
 
 #include "util.h"
-#include "eventloop.h"
 
 namespace star {
 
+class EventLoop;
+class Channel;
 class ReadBuffer;
 class Socket;
 class TcpConnection;
