@@ -1,5 +1,5 @@
-#ifndef STARSERVER_POLLER_H
-#define STARSERVER_POLLER_H
+#ifndef STARSERVER_ABSTRACTPOLLER_H
+#define STARSERVER_ABSTRACTPOLLER_H
 
 #include "util.h"
 
@@ -19,5 +19,5 @@ class AbstractPoller : public Noncopyable {
 
 }  // end of namespace star
 
-#endif // STARSERVER_POLLER_H
+#endif // STARSERVER_ABSTRACTPOLLER_H
 

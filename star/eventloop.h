@@ -2,7 +2,7 @@
 #define STARSERVER_EVENTLOOP_H
 
 #include "util.h"
-#include "epoller.h"
+#include "abstractPoller.h"
 #include "threads.h"
 
 #include <memory>
@@ -13,8 +13,9 @@ namespace star {
 
 class EventLoop : public Noncopyable {
     using Task = std::function<void()>;
-  public: 
-    EventLoop();
+  public:
+    enum Driver {dEpoller, dPoller};
+    explicit EventLoop(Driver driver=dEpoller);
     ~EventLoop();
 
     void loop();
@@ -28,11 +29,13 @@ class EventLoop : public Noncopyable {
     void updateChannel(Channel* ch) { poller_->updateChannel(ch); }
     void removeChannel(Channel* ch) { poller_->removeChannel(ch); }
 
+    Driver driver() const noexcept { return driver_; } 
   private:
     void queueInLoop(Task&& task);
     void wakeup();
     void doPendingTasks();
-
+    
+    Driver driver_;
     std::thread::id tid_;
     std::atomic<bool> quit_;
     std::unique_ptr<AbstractPoller> poller_;

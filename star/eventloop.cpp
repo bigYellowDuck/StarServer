@@ -1,6 +1,8 @@
 #include "eventloop.h"
 #include "logging.h"
 #include "channel.h"
+#include "epoller.h"
+#include "poller.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -19,13 +21,20 @@ class IgnoreSigPipe {
 
 IgnoreSigPipe initObj;
 
-EventLoop::EventLoop()
-    : tid_(std::this_thread::get_id()),
+EventLoop::EventLoop(Driver driver)
+    : driver_(driver),
+      tid_(std::this_thread::get_id()),
       quit_(false),
-      poller_(new Epoller),
+      poller_(),
       callingPendingTasks_(false),
       wakeupFd_(util::createEventfd()),
       wakeupChannel_(new Channel(this, wakeupFd_)) {
+    if (driver == dEpoller) {
+        poller_.reset(new Epoller);
+    } else {
+        poller_.reset(new Poller);
+    }
+
     wakeupChannel_->enableRead(true);
     wakeupChannel_->setReadCallBack(
             [this]{
@@ -123,7 +132,8 @@ void MultiEventLoop::start() {
     for (int i=0; i<numThreads_; ++i) {
         threadPool_->addTask(
             [this, i] {
-                loops_[i] = std::move(std::unique_ptr<EventLoop>(new EventLoop));
+                // loops_[i] = std::move(std::unique_ptr<EventLoop>(new EventLoop));
+                loops_[i].reset(new EventLoop(baseLoop_->driver()));
                 loops_[i]->loop();
         });
     }

@@ -7,6 +7,11 @@
 
 namespace star {
 
+const int Epoller::kReadEvent = EPOLLIN|EPOLLPRI;
+const int Epoller::kWriteEvent = EPOLLOUT;
+const int Epoller::kErrorEvent = EPOLLERR;
+
+
 Epoller::Epoller() 
     : activeFds_(-1) {
     fd_ = epoll_create1(EPOLL_CLOEXEC);
@@ -83,7 +88,7 @@ void Epoller::loop_once(int waitMs) {
                 trace("channel %lld fd %d handle write", (long long)ch->id(),ch->fd());
                 ch->handleWrite();
             }
-            if (events & EPOLLERR) {
+            if (events & kErrorEvent) {
                 error("channel %lld fd %d handle error", (long long)ch->id(), ch->fd());
                 ch->handleError();
             }

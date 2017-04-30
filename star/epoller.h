@@ -10,8 +10,8 @@
 namespace star {
 
 const int kMaxEvents = 2000;
-const int kReadEvent = EPOLLIN | EPOLLPRI;
-const int kWriteEvent = EPOLLOUT;
+//const int kReadEvent = EPOLLIN | EPOLLPRI;
+//const int kWriteEvent = EPOLLOUT;
 
 class Epoller : public AbstractPoller {
   public:
@@ -28,6 +28,10 @@ class Epoller : public AbstractPoller {
     int activeFds_;
     std::set<Channel*> liveChannels_;
     struct epoll_event activeEvents_[kMaxEvents];
+
+    static const int kReadEvent;
+    static const int kWriteEvent;
+    static const int kErrorEvent;
 };
 
 }  // end of namespace star

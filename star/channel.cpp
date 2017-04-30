@@ -4,13 +4,27 @@
 #include <atomic>
 
 #include <unistd.h>
+#include <poll.h>
+#include <sys/epoll.h>
 
 namespace star {
+
+static_assert(POLLIN==EPOLLIN, "POLLIN != EPOLLIN");
+static_assert(POLLOUT==EPOLLOUT, "POLLOUT != EPOLLOUT");
+static_assert(POLLPRI==EPOLLPRI, "POLLPRI != EPOLLPRI");
+static_assert(POLLERR==EPOLLERR, "POLLERR != EPOLLERR");
+
+
+
+const int kReadEvent = POLLIN|POLLPRI;
+const int kWriteEvent = POLLOUT;
+const int kErrorEvent = POLLERR;
 
 Channel::Channel(EventLoop* loop, int fd)
     : fd_(fd),
       events_(0),
-      loop_(loop) {
+      loop_(loop),
+      index_(-1) {
     static std::atomic<int64_t> id(0);
     id_ = ++id;
 }
@@ -55,6 +69,10 @@ bool Channel::readEnabled() {
 
 bool Channel::writeEnabled() {
     return events_ & kWriteEvent;
+}
+
+bool Channel::isWriting() const noexcept { 
+    return events_ & kWriteEvent; 
 }
 
 void Channel::handleRead() {

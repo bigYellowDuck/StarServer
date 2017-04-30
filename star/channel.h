@@ -44,18 +44,22 @@ class Channel : public Noncopyable {
     void enableReadWrite(bool readable, bool writable);
     bool readEnabled();
     bool writeEnabled();
-    bool isWriting() const noexcept { return events_ & kWriteEvent; }
+    bool isWriting() const noexcept;
 
     void handleRead();
     void handleWrite();
     void handleError();
 
     void close();
+
+    void set_index(int index) { index_ = index; }
+    int index() const noexcept { return index_; }
   private:
     int fd_;
     uint32_t events_;
     EventLoop* loop_;
     int64_t id_;
+    int index_;  // for poller
 
     EventCallBack readCallBack_;
     EventCallBack writeCallBack_;

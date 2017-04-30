@@ -8,9 +8,9 @@
 
 namespace star {
 
-Server::Server(int port)
+Server::Server(int port, const std::string& driver)
     : running_(false),
-      loop_(new EventLoop),
+      loop_(new EventLoop(driver=="Epoller"?EventLoop::dEpoller:EventLoop::dPoller)),
       acceptor_(new Acceptor(loop_.get(), port)),
       signal_(new Signal(loop_.get())),
       nextConnId_(1) {
@@ -69,7 +69,7 @@ void Server::newConnection(int sockfd, struct sockaddr_in* addr) {
             [this](const TcpConnectionPtr& conn) {
                 this->removeConnection(conn);
             });
-    loop_->runInLoopThread([conn] {
+    ioLoop->runInLoopThread([conn] {
             conn->connectionEstablished();
         });
 
